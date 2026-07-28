@@ -16,11 +16,25 @@ const app = express();
 
 connectDB();
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://campus-ai-bridge-4-frontend.onrender.com"
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
   })
 );
 
@@ -59,9 +73,9 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Backend URL: http://localhost:${PORT}`);
   console.log(
-    `AI Engine: OpenRouter (${
+    `AI Engine: ${
       process.env.OPENROUTER_MODEL ||
       "meta-llama/llama-3.3-70b-instruct:free"
-    })`
+    }`
   );
 });
